@@ -1,0 +1,71 @@
+import type { ReactNode } from 'react';
+import { useEffect } from 'react';
+import { X } from 'lucide-react';
+
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: ReactNode;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  showCloseButton?: boolean;
+}
+
+export function Modal({ isOpen, onClose, title, children, size = 'md', showCloseButton = true }: ModalProps) {
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  const sizeStyles = {
+    sm: 'max-w-md',
+    md: 'max-w-lg',
+    lg: 'max-w-2xl',
+    xl: 'max-w-4xl',
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div
+          className="fixed inset-0 bg-page-ink/80 transition-opacity"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+        <div
+          className={`relative w-full ${sizeStyles[size]} bg-card-carbon border border-steel-border rounded-[8px] overflow-hidden`}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
+          <div className="flex items-center justify-between border-b border-steel-border px-6 py-4">
+            <h2 id="modal-title" className="text-subheading font-semibold text-white">
+              {title}
+            </h2>
+            {showCloseButton && (
+              <button
+                onClick={onClose}
+                className="p-1 rounded-[8px] text-ash hover:text-white hover:bg-white/5 transition-colors"
+                aria-label="Close modal"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
+          </div>
+          <div className="p-6">{children}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
